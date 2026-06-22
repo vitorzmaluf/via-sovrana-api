@@ -20,8 +20,10 @@ const allowedOrigins = [
   'http://127.0.0.1:5500'
 ];
 
-app.use(cors({
+const corsOptions = {
   origin(origin, callback) {
+    console.log('Origin recebida:', origin);
+
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
@@ -30,16 +32,22 @@ app.use(cors({
 
     return callback(new Error(`Origem não permitida pelo CORS: ${origin}`));
   },
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+  optionsSuccessStatus: 204
+};
 
-app.options('*', cors());
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'via-sovrana-api', ts: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    service: 'via-sovrana-api',
+    ts: new Date().toISOString()
+  });
 });
 
 app.use('/api/freight', freightRoutes);
