@@ -1,10 +1,11 @@
-const express       = require('express');
-const cors          = require('cors');
+const express = require('express');
+const cors = require('cors');
 const freightRoutes = require('./routes/freight');
-const costRoutes    = require('./routes/costs');
+const costRoutes = require('./routes/costs');
+const leadRoutes = require('./routes/leads');
 const { errorHandler } = require('./middleware/validation');
 
-const app  = express();
+const app = express();
 const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
@@ -12,6 +13,7 @@ const allowedOrigins = [
   'https://www.viasovrana.com.br',
 
   // Localhost para testes
+  'http://localhost:8080',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5500',
@@ -58,6 +60,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/freight', freightRoutes);
 app.use('/api/costs', costRoutes);
+app.use('/api/leads', leadRoutes);
 
 app.use(errorHandler);
 
