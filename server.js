@@ -5,12 +5,14 @@ const cors = require('cors');
 const freightRoutes = require('./routes/freight');
 const costRoutes = require('./routes/costs');
 const leadRoutes = require('./routes/leads');
+const authRoutes = require('./routes/auth');
+const { authRequired } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/validation');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const allowedOrigins = [
+const defaultAllowedOrigins = [
   'https://viasovrana.com.br',
   'https://www.viasovrana.com.br',
 
@@ -19,10 +21,16 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5500',
+  'http://127.0.0.1:8080',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5500'
 ];
+
+const allowedOrigins = (process.env.CORS_ORIGINS || defaultAllowedOrigins.join(','))
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
 
 const corsOptions = {
   origin(origin, callback) {
@@ -60,9 +68,15 @@ app.get('/health', (req, res) => {
   });
 });
 
-app.use('/api/freight', freightRoutes);
-app.use('/api/costs', costRoutes);
+app.use('/api/auth', authRoutes);
+
+// Rotas protegidas da calculadora interna
+app.use('/api/freight', authRequired, freightRoutes);
+app.use('/api/costs', authRequired, costRoutes);
+
+// Rota pública do formulário do site
 app.use('/api/leads', leadRoutes);
+
 
 app.use(errorHandler);
 
