@@ -4,11 +4,11 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 function clean(value) {
-  return String(value || '').trim();
+    return String(value || '').trim();
 }
 
 function buildEmailHtml(data) {
-  return `
+    return `
     <div style="font-family: Arial, sans-serif; color: #152033; line-height: 1.5;">
       <h2>Nova cotação - Via Sovrana</h2>
 
@@ -36,7 +36,7 @@ function buildEmailHtml(data) {
 }
 
 function buildEmailText(data) {
-  return `
+    return `
 Nova cotação - Via Sovrana
 
 Nome: ${clean(data.nome)}
@@ -55,48 +55,87 @@ Lead recebido pelo formulário do site viasovrana.com.br
   `;
 }
 
-router.post('/site-cotacao', async (req, res, next) => {
-  try {
-    const data = req.body || {};
-
-    const nome = clean(data.nome);
-    const whatsapp = clean(data.whatsapp);
-    const origem = clean(data.origem);
-    const destino = clean(data.destino);
-
-    if (!nome || !whatsapp || !origem || !destino) {
-      return res.status(400).json({
-        ok: false,
-        message: 'Preencha nome, WhatsApp, origem e destino.'
-      });
+async function verifyTurnstile(token, remoteIp) {
+    if (!token) {
+        return false;
     }
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 465),
-      secure: String(process.env.SMTP_SECURE) === 'true',
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
-      }
+    const formData = new URLSearchParams();
+    formData.append('secret', process.env.TURNSTILE_SECRET_KEY);
+    formData.append('response', token);
+
+    if (remoteIp) {
+        formData.append('remoteip', remoteIp);
+    }
+
+    const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        body: formData
     });
 
-    await transporter.sendMail({
-      from: `"Via Sovrana" <${process.env.SMTP_USER}>`,
-      to: process.env.LEAD_TO_EMAIL,
-      replyTo: clean(data.email) || process.env.SMTP_USER,
-      subject: `Nova cotação Via Sovrana - ${origem} para ${destino}`,
-      text: buildEmailText(data),
-      html: buildEmailHtml(data)
-    });
+    const result = await response.json();
 
-    res.json({
-      ok: true,
-      message: 'Cotação enviada com sucesso.'
-    });
-  } catch (error) {
-    next(error);
-  }
+    return Boolean(result.success);
+}
+
+router.post('/site-cotacao', async (req, res, next) => {
+    try {
+        const data = req.body || {};
+
+        const turnstileToken = data['cf-turnstile-response'];
+
+        const remoteIp =
+            req.headers['cf-connecting-ip'] ||
+            req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+            req.ip;
+
+        const captchaOk = await verifyTurnstile(turnstileToken, remoteIp);
+
+        if (!captchaOk) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Validação de segurança não concluída. Atualize a página e tente novamente.'
+            });
+        }
+
+        const nome = clean(data.nome);
+        const whatsapp = clean(data.whatsapp);
+        const origem = clean(data.origem);
+        const destino = clean(data.destino);
+
+        if (!nome || !whatsapp || !origem || !destino) {
+            return res.status(400).json({
+                ok: false,
+                message: 'Preencha nome, WhatsApp, origem e destino.'
+            });
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT || 465),
+            secure: String(process.env.SMTP_SECURE) === 'true',
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        await transporter.sendMail({
+            from: `"Via Sovrana" <${process.env.SMTP_USER}>`,
+            to: process.env.LEAD_TO_EMAIL,
+            replyTo: clean(data.email) || process.env.SMTP_USER,
+            subject: `Nova cotação Via Sovrana - ${origem} para ${destino}`,
+            text: buildEmailText(data),
+            html: buildEmailHtml(data)
+        });
+
+        res.json({
+            ok: true,
+            message: 'Cotação enviada com sucesso.'
+        });
+    } catch (error) {
+        next(error);
+    }
 });
 
 module.exports = router;
