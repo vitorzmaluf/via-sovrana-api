@@ -12,25 +12,24 @@ const { errorHandler } = require('./middleware/validation');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const defaultAllowedOrigins = [
+const defaultOrigins = [
   'https://viasovrana.com.br',
   'https://www.viasovrana.com.br',
 
-  // Localhost para testes
-  'http://localhost:8080',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:5500',
-  'http://127.0.0.1:8080',
+  'http://localhost:8080',
+
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
-  'http://127.0.0.1:5500'
+  'http://127.0.0.1:5500',
+  'http://127.0.0.1:8080'
 ];
 
-const allowedOrigins = (process.env.CORS_ORIGINS || defaultAllowedOrigins.join(','))
-  .split(',')
-  .map(origin => origin.trim())
-  .filter(Boolean);
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+  : defaultOrigins;
 
 const corsOptions = {
   origin(origin, callback) {
