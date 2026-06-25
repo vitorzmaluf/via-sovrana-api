@@ -15,8 +15,12 @@ function authRequired(req, res, next) {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = {
+      id: payload.userId,
       username: payload.username,
-      role: payload.role || 'internal'
+      name: payload.name,
+      roles: payload.roles || [],
+      permissions: payload.permissions || [],
+      routes: payload.routes || []
     };
 
     next();
@@ -28,6 +32,40 @@ function authRequired(req, res, next) {
   }
 }
 
+function requirePermission(permissionKey) {
+  return (req, res, next) => {
+    const permissions = req.user?.permissions || [];
+
+    if (!permissions.includes(permissionKey)) {
+      return res.status(403).json({
+        ok: false,
+        message: 'Você não tem permissão para executar esta ação.'
+      });
+    }
+
+    next();
+  };
+}
+
+function requireAnyRole(...roleKeys) {
+  return (req, res, next) => {
+    const roles = req.user?.roles || [];
+
+    const allowed = roleKeys.some(role => roles.includes(role));
+
+    if (!allowed) {
+      return res.status(403).json({
+        ok: false,
+        message: 'Seu perfil não permite acessar este recurso.'
+      });
+    }
+
+    next();
+  };
+}
+
 module.exports = {
-  authRequired
+  authRequired,
+  requirePermission,
+  requireAnyRole
 };
