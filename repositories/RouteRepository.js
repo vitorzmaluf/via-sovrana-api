@@ -106,16 +106,16 @@ class RouteRepository {
       [routeId]
     );
 
-    const [weightRows] = await pool.execute(
-      `
-      SELECT weight_kg
-      FROM route_table_weights
-      WHERE route_id = ?
-        AND active = 1
-      ORDER BY display_order, weight_kg
-      `,
-      [routeId]
-    );
+    // const [weightRows] = await pool.execute(
+    //   `
+    //   SELECT weight_kg
+    //   FROM route_table_weights
+    //   WHERE route_id = ?
+    //     AND active = 1
+    //   ORDER BY display_order, weight_kg
+    //   `,
+    //   [routeId]
+    // );
 
     const [costRows] = await pool.execute(
       `
@@ -185,23 +185,23 @@ class RouteRepository {
       TABLE_WEIGHTS: [],
     //   weightRows.map((row) => toNumber(row.weight_kg)),
 
-    //   DEFAULT_COSTS: {
-    //     kmDia: toNumber(cost.daily_km),
-    //     kmL: toNumber(cost.vehicle_km_per_liter),
-    //     dieselL: toNumber(cost.fuel_price_per_liter),
-    //     motorista: toNumber(cost.driver_cost),
-    //     seguroVeic: toNumber(cost.vehicle_insurance_cost),
-    //     manutKmR: toNumber(cost.maintenance_cost_per_km),
-    //     parcelaVeic: toNumber(cost.vehicle_installment_daily_cost),
-    //     pedagios: toNumber(cost.tolls_cost),
-    //     seguroCarga: toNumber(cost.cargo_insurance_cost),
-    //   },
+      DEFAULT_COSTS: {
+        kmDia: toNumber(cost.daily_km),
+        kmL: toNumber(cost.vehicle_km_per_liter),
+        dieselL: toNumber(cost.fuel_price_per_liter),
+        motorista: toNumber(cost.driver_cost),
+        seguroVeic: toNumber(cost.vehicle_insurance_cost),
+        manutKmR: toNumber(cost.maintenance_cost_per_km),
+        parcelaVeic: toNumber(cost.vehicle_installment_daily_cost),
+        pedagios: toNumber(cost.tolls_cost),
+        seguroCarga: toNumber(cost.cargo_insurance_cost),
+      },
 
-    //   commercialDefaults: {
-    //     frequency: params.default_frequency,
-    //     deliveryDeadline: params.default_delivery_deadline,
-    //     collectionCutoffTime: params.collection_cutoff_time,
-    //   },
+      commercialDefaults: {
+        frequency: params.default_frequency,
+        deliveryDeadline: params.default_delivery_deadline,
+        collectionCutoffTime: params.collection_cutoff_time,
+      },
     };
   }
 }
