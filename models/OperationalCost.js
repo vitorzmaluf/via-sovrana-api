@@ -16,15 +16,15 @@ class OperationalCostParams {
    * @param {number} p.seguroCarga  RCTR-C + RC-DC/dia
    */
   constructor(p = {}) {
-    this.kmDia       = p.kmDia       ?? 340;
-    this.kmL         = p.kmL         ?? 11;
-    this.dieselL     = p.dieselL     ?? 6.20;
-    this.motorista   = p.motorista   ?? 200.00;
-    this.seguroVeic  = p.seguroVeic  ?? 20.00;
-    this.manutKmR    = p.manutKmR    ?? 0.12;
-    this.parcelaVeic = p.parcelaVeic ?? 100.00;
-    this.pedagios    = p.pedagios    ?? 80.00;
-    this.seguroCarga = p.seguroCarga ?? 19.00;
+    this.kmDia = Number(p.kmDia);
+    this.kmL = Number(p.kmL);
+    this.dieselL = Number(p.dieselL);
+    this.motorista = Number(p.motorista);
+    this.seguroVeic = Number(p.seguroVeic);
+    this.manutKmR = Number(p.manutKmR);
+    this.parcelaVeic = Number(p.parcelaVeic);
+    this.pedagios = Number(p.pedagios);
+    this.seguroCarga = Number(p.seguroCarga);
   }
 }
 
@@ -33,14 +33,14 @@ class OperationalCostParams {
  */
 class OperationalCostResult {
   constructor(p) {
-    this.diesel      = p.diesel;
-    this.manutencao  = p.manutencao;
-    this.motorista   = p.motorista;
-    this.seguroVeic  = p.seguroVeic;
+    this.diesel = p.diesel;
+    this.manutencao = p.manutencao;
+    this.motorista = p.motorista;
+    this.seguroVeic = p.seguroVeic;
     this.parcelaVeic = p.parcelaVeic;
-    this.pedagios    = p.pedagios;
+    this.pedagios = p.pedagios;
     this.seguroCarga = p.seguroCarga;
-    this.total       = p.total;
+    this.total = p.total;
   }
 }
 
@@ -54,9 +54,9 @@ class BreakEvenTarget {
    * @param {number} receitaNecessaria  R$/dia para atingir a meta
    */
   constructor(meta, metaLabel, receitaNecessaria) {
-    this.meta               = meta;
-    this.metaLabel          = metaLabel;
-    this.receitaNecessaria  = receitaNecessaria;
+    this.meta = meta;
+    this.metaLabel = metaLabel;
+    this.receitaNecessaria = receitaNecessaria;
   }
 }
 

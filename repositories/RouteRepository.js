@@ -17,7 +17,11 @@ class RouteRepository {
       `
     );
 
-    return rows[0]?.setting_value || 'rota_castelo';
+    if (!rows[0]?.setting_value) {
+      throw new Error('Configuração default_route_key não encontrada em system_settings.');
+    }
+
+    return rows[0].setting_value;
   }
 
   async getRouteByKey(routeKey) {
@@ -106,16 +110,16 @@ class RouteRepository {
       [routeId]
     );
 
-    // const [weightRows] = await pool.execute(
-    //   `
-    //   SELECT weight_kg
-    //   FROM route_table_weights
-    //   WHERE route_id = ?
-    //     AND active = 1
-    //   ORDER BY display_order, weight_kg
-    //   `,
-    //   [routeId]
-    // );
+    const [weightRows] = await pool.execute(
+      `
+  SELECT weight_kg
+  FROM route_table_weights
+  WHERE route_id = ?
+    AND active = 1
+  ORDER BY display_order, weight_kg
+  `,
+      [routeId]
+    );
 
     const [costRows] = await pool.execute(
       `
@@ -182,7 +186,7 @@ class RouteRepository {
       CITIES,
       ZONES,
 
-      TABLE_WEIGHTS: [],
+      TABLE_WEIGHTS: weightRows.map((row) => toNumber(row.weight_kg)),
       //   weightRows.map((row) => toNumber(row.weight_kg)),
 
       DEFAULT_COSTS: {

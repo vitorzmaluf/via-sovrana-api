@@ -1,7 +1,7 @@
-const {
-  TAX: FALLBACK_TAX,
-  DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
-} = require('../config/domain');
+// const {
+//   TAX: FALLBACK_TAX,
+//   DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
+// } = require('../config/domain');
 
 const RouteRepository = require('../repositories/RouteRepository');
 
@@ -13,22 +13,10 @@ const {
 
 class CostService {
   async getCalculatorConfig() {
-    try {
-      return await RouteRepository.getRouteConfig();
-    } catch (error) {
-      console.error(
-        '[CostService] Falha ao carregar configuração do MySQL. Usando config/domain.js:',
-        error.message
-      );
-
-      return {
-        TAX: FALLBACK_TAX,
-        DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
-      };
-    }
+    return RouteRepository.getRouteConfig();
   }
 
-  calcDailyCostWithDefaults(input = null, defaultCosts = FALLBACK_DEFAULT_COSTS) {
+  calcDailyCostWithDefaults(input = null, defaultCosts) {
     const p = new OperationalCostParams({
       ...defaultCosts,
       ...(input || {}),
@@ -62,7 +50,7 @@ class CostService {
   calcBreakEvenWithConfig(
     input = null,
     tax = FALLBACK_TAX,
-    defaultCosts = FALLBACK_DEFAULT_COSTS
+    defaultCosts
   ) {
     const custos = this.calcDailyCostWithDefaults(input, defaultCosts);
 

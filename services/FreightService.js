@@ -1,10 +1,10 @@
-const {
-  TAX: FALLBACK_TAX,
-  CITIES: FALLBACK_CITIES,
-  ZONES: FALLBACK_ZONES,
-  TABLE_WEIGHTS: FALLBACK_TABLE_WEIGHTS,
-  DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
-} = require('../config/domain');
+// const {
+//   TAX: FALLBACK_TAX,
+//   CITIES: FALLBACK_CITIES,
+//   ZONES: FALLBACK_ZONES,
+//   TABLE_WEIGHTS: FALLBACK_TABLE_WEIGHTS,
+//   DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
+// } = require('../config/domain');
 
 const RouteRepository = require('../repositories/RouteRepository');
 const FreightResult = require('../models/FreightResult');
@@ -18,23 +18,8 @@ const CostService = require('./CostService');
 
 class FreightService {
   async getCalculatorConfig() {
-    try {
-      return await RouteRepository.getRouteConfig();
-    } catch (error) {
-      console.error(
-        '[FreightService] Falha ao carregar configuração do MySQL. Usando config/domain.js:',
-        error.message
-      );
-
-      return {
-        TAX: FALLBACK_TAX,
-        CITIES: FALLBACK_CITIES,
-        ZONES: FALLBACK_ZONES,
-        TABLE_WEIGHTS: FALLBACK_TABLE_WEIGHTS,
-        DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
-      };
-    }
-  }
+    return RouteRepository.getRouteConfig();
+  } 
 
   quoteFromConfig(config, cityKey, zoneKey, pesoKg) {
     const { TAX, CITIES, ZONES } = config;
@@ -156,10 +141,11 @@ class FreightService {
 
     // A tabela de pesos NÃO vem do MySQL por enquanto.
     // Usamos os pesos fixos antigos apenas para a aba "Tabela".
-    const tableWeights =
-      Array.isArray(config.TABLE_WEIGHTS) && config.TABLE_WEIGHTS.length > 0
-        ? config.TABLE_WEIGHTS
-        : FALLBACK_TABLE_WEIGHTS;
+    const tableWeights = config.TABLE_WEIGHTS;
+
+    if (!Array.isArray(tableWeights) || tableWeights.length === 0) {
+      throw new Error('Pesos da tabela comercial não configurados no banco.');
+    }
 
     const rows = [];
 
