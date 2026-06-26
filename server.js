@@ -6,6 +6,7 @@ const freightRoutes = require('./routes/freight');
 const costRoutes = require('./routes/costs');
 const leadRoutes = require('./routes/leads');
 const authRoutes = require('./routes/auth');
+const calculatorRoutes = require('./routes/calculator');
 const { authRequired } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/validation');
 const { testConnection } = require('./config/db');
@@ -86,6 +87,7 @@ app.use('/api/auth', authRoutes);
 // Rotas protegidas da calculadora interna
 app.use('/api/freight', authRequired, freightRoutes);
 app.use('/api/costs', authRequired, costRoutes);
+app.use('/api/calculator', authRequired, calculatorRoutes);
 
 // Rota pública do formulário do site
 app.use('/api/leads', leadRoutes);

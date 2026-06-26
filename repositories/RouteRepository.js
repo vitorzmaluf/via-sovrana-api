@@ -183,6 +183,16 @@ class RouteRepository {
         TRIB_TOTAL: toNumber(params.total_tax_percent),
       },
 
+      parameters: {
+        pricePerKg: toNumber(params.price_per_kg),
+        presumedProfitTaxPercent: toNumber(params.presumed_profit_tax_percent),
+        effectiveIcmsPercent: toNumber(params.effective_icms_percent),
+        totalTaxPercent: toNumber(params.total_tax_percent),
+        defaultFrequency: params.default_frequency,
+        defaultDeliveryDeadline: params.default_delivery_deadline,
+        collectionCutoffTime: params.collection_cutoff_time,
+      },
+
       CITIES,
       ZONES,
 
