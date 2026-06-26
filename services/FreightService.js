@@ -151,14 +151,15 @@ class FreightService {
 
   async buildPriceTable() {
     const config = await this.getCalculatorConfig();
-    const { CITIES, ZONES, TABLE_WEIGHTS } = config;
 
-    if (!TABLE_WEIGHTS || TABLE_WEIGHTS.length === 0) {
-      return {
-        pesos: [],
-        rows: [],
-      };
-    }
+    const { CITIES, ZONES } = config;
+
+    // A tabela de pesos NÃO vem do MySQL por enquanto.
+    // Usamos os pesos fixos antigos apenas para a aba "Tabela".
+    const tableWeights =
+      Array.isArray(config.TABLE_WEIGHTS) && config.TABLE_WEIGHTS.length > 0
+        ? config.TABLE_WEIGHTS
+        : FALLBACK_TABLE_WEIGHTS;
 
     const rows = [];
 
@@ -166,9 +167,13 @@ class FreightService {
       for (const [zoneKey, zone] of Object.entries(ZONES)) {
         const precos = {};
 
-        for (const w of TABLE_WEIGHTS) {
+        for (const w of tableWeights) {
           precos[`${w}kg`] = this.quoteFromConfig(
-            config,
+            {
+              ...config,
+              CITIES,
+              ZONES,
+            },
             cityKey,
             zoneKey,
             w
@@ -187,7 +192,7 @@ class FreightService {
     }
 
     return {
-      pesos: TABLE_WEIGHTS.map((w) => `${w}kg`),
+      pesos: tableWeights.map((w) => `${w}kg`),
       rows,
     };
   }
