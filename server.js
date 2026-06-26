@@ -8,6 +8,7 @@ const leadRoutes = require('./routes/leads');
 const authRoutes = require('./routes/auth');
 const { authRequired } = require('./middleware/auth');
 const { errorHandler } = require('./middleware/validation');
+const { testConnection } = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,13 +60,26 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'via-sovrana-api',
-    ts: new Date().toISOString()
-  });
-});
+app.get('/health', async (req, res) => {
+  try {
+    const dbOk = await testConnection();
+
+    res.json({
+      status: 'ok',
+      service: 'via-sovrana-api',
+      database: dbOk ? 'ok' : 'error',
+      ts: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      service: 'via-sovrana-api',
+      database: 'error',
+      message: error.message,
+      ts: new Date().toISOString()
+    });
+  }
+}); 
 
 app.use('/api/auth', authRoutes);
 

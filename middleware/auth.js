@@ -34,16 +34,17 @@ function authRequired(req, res, next) {
 
 function requirePermission(permissionKey) {
   return (req, res, next) => {
+    const roles = req.user?.roles || [];
     const permissions = req.user?.permissions || [];
 
-    if (!permissions.includes(permissionKey)) {
-      return res.status(403).json({
-        ok: false,
-        message: 'Você não tem permissão para executar esta ação.'
-      });
+    if (roles.includes('owner') || permissions.includes(permissionKey)) {
+      return next();
     }
 
-    next();
+    return res.status(403).json({
+      ok: false,
+      message: 'Você não tem permissão para executar esta ação.'
+    });
   };
 }
 
@@ -51,7 +52,11 @@ function requireAnyRole(...roleKeys) {
   return (req, res, next) => {
     const roles = req.user?.roles || [];
 
-    const allowed = roleKeys.some(role => roles.includes(role));
+    if (roles.includes('owner')) {
+      return next();
+    }
+
+    const allowed = roleKeys.some((role) => roles.includes(role));
 
     if (!allowed) {
       return res.status(403).json({
