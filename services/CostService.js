@@ -4,6 +4,7 @@ const {
 } = require('../config/domain');
 
 const RouteRepository = require('../repositories/RouteRepository');
+
 const {
   OperationalCostParams,
   OperationalCostResult,
@@ -38,12 +39,12 @@ class CostService {
 
     const total = r2(
       diesel +
-        p.motorista +
-        p.seguroVeic +
-        manutencao +
-        p.parcelaVeic +
-        p.pedagios +
-        p.seguroCarga
+      p.motorista +
+      p.seguroVeic +
+      manutencao +
+      p.parcelaVeic +
+      p.pedagios +
+      p.seguroCarga
     );
 
     return new OperationalCostResult({
@@ -68,6 +69,14 @@ class CostService {
     const metas = [0, 0.2, 0.25, 0.3].map((meta) => {
       const denominador = 1 - tax.LP - tax.ICMS_EFET - meta;
 
+      if (denominador <= 0) {
+        return new BreakEvenTarget(
+          meta,
+          meta === 0 ? 'Zero margem' : `${meta * 100}% margem`,
+          0
+        );
+      }
+
       return new BreakEvenTarget(
         meta,
         meta === 0 ? 'Zero margem' : `${meta * 100}% margem`,
@@ -80,11 +89,16 @@ class CostService {
 
   async calcDailyCost(input = null) {
     const config = await this.getCalculatorConfig();
-    return this.calcDailyCostWithDefaults(input, config.DEFAULT_COSTS);
+
+    return this.calcDailyCostWithDefaults(
+      input,
+      config.DEFAULT_COSTS
+    );
   }
 
   async calcBreakEven(input = null) {
     const config = await this.getCalculatorConfig();
+
     return this.calcBreakEvenWithConfig(
       input,
       config.TAX,
@@ -94,12 +108,17 @@ class CostService {
 
   async getDefaults() {
     const config = await this.getCalculatorConfig();
+
     return config.DEFAULT_COSTS;
+  }
+
+  async saveDefaults(input = {}) {
+    return RouteRepository.updateDefaultCosts(input);
   }
 }
 
 function r2(n) {
-  return Math.round(n * 100) / 100;
+  return Math.round(Number(n || 0) * 100) / 100;
 }
 
 module.exports = new CostService();

@@ -183,7 +183,7 @@ class RouteRepository {
       ZONES,
 
       TABLE_WEIGHTS: [],
-    //   weightRows.map((row) => toNumber(row.weight_kg)),
+      //   weightRows.map((row) => toNumber(row.weight_kg)),
 
       DEFAULT_COSTS: {
         kmDia: toNumber(cost.daily_km),
@@ -203,6 +203,64 @@ class RouteRepository {
         collectionCutoffTime: params.collection_cutoff_time,
       },
     };
+  }
+
+  async updateDefaultCosts(input = {}, routeKey = null) {
+    const finalRouteKey = routeKey || await this.getDefaultRouteKey();
+    const route = await this.getRouteByKey(finalRouteKey);
+    const routeId = route.id;
+
+    const currentConfig = await this.getRouteConfig(finalRouteKey);
+    const current = currentConfig.DEFAULT_COSTS;
+
+    const next = {
+      kmDia: Number(input.kmDia ?? current.kmDia),
+      kmL: Number(input.kmL ?? current.kmL),
+      dieselL: Number(input.dieselL ?? current.dieselL),
+      motorista: Number(input.motorista ?? current.motorista),
+      seguroVeic: Number(input.seguroVeic ?? current.seguroVeic),
+      manutKmR: Number(input.manutKmR ?? current.manutKmR),
+      parcelaVeic: Number(input.parcelaVeic ?? current.parcelaVeic),
+      pedagios: Number(input.pedagios ?? current.pedagios),
+      seguroCarga: Number(input.seguroCarga ?? current.seguroCarga),
+    };
+
+    const [result] = await pool.execute(
+      `
+    UPDATE route_cost_defaults
+    SET
+      daily_km = ?,
+      vehicle_km_per_liter = ?,
+      fuel_price_per_liter = ?,
+      driver_cost = ?,
+      vehicle_insurance_cost = ?,
+      maintenance_cost_per_km = ?,
+      vehicle_installment_daily_cost = ?,
+      tolls_cost = ?,
+      cargo_insurance_cost = ?
+    WHERE route_id = ?
+      AND active = 1
+    `,
+      [
+        next.kmDia,
+        next.kmL,
+        next.dieselL,
+        next.motorista,
+        next.seguroVeic,
+        next.manutKmR,
+        next.parcelaVeic,
+        next.pedagios,
+        next.seguroCarga,
+        routeId,
+      ]
+    );
+
+    if (!result.affectedRows) {
+      throw new Error(`Nenhum registro de custos encontrado para a rota: ${finalRouteKey}`);
+    }
+
+    const updatedConfig = await this.getRouteConfig(finalRouteKey);
+    return updatedConfig.DEFAULT_COSTS;
   }
 }
 

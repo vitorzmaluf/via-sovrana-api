@@ -21,6 +21,20 @@ class CostController {
       next(err);
     }
   }
+
+  async saveDefaults(req, res, next) {
+  try {
+    const dto = new CostRequest(req.body);
+    const defaults = await CostService.saveDefaults(dto);
+
+    res.json({
+      ok: true,
+      defaults,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
 }
 
 module.exports = new CostController();

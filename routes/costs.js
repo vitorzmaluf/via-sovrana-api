@@ -10,5 +10,6 @@ const router = express.Router();
 
 router.get('/defaults',   CostController.defaults.bind(CostController));
 router.post('/calculate', CostController.calculate.bind(CostController));
+router.put('/defaults', CostController.saveDefaults.bind(CostController));
 
 module.exports = router;
