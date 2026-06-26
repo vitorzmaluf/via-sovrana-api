@@ -135,6 +135,7 @@ router.post('/login', async (req, res, next) => {
 
     const tokenPayload = {
       id: user.id,
+      userId: user.id,
       username: user.username,
       name: user.name,
       roles: access.roles,
