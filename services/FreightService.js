@@ -1,11 +1,3 @@
-// const {
-//   TAX: FALLBACK_TAX,
-//   CITIES: FALLBACK_CITIES,
-//   ZONES: FALLBACK_ZONES,
-//   TABLE_WEIGHTS: FALLBACK_TABLE_WEIGHTS,
-//   DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
-// } = require('../config/domain');
-
 const RouteRepository = require('../repositories/RouteRepository');
 const FreightResult = require('../models/FreightResult');
 const {
@@ -139,8 +131,7 @@ class FreightService {
 
     const { CITIES, ZONES } = config;
 
-    // A tabela de pesos NÃO vem do MySQL por enquanto.
-    // Usamos os pesos fixos antigos apenas para a aba "Tabela".
+   // Pesos carregados do MySQL via route_table_weights.
     const tableWeights = config.TABLE_WEIGHTS;
 
     if (!Array.isArray(tableWeights) || tableWeights.length === 0) {

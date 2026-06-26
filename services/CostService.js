@@ -1,8 +1,3 @@
-// const {
-//   TAX: FALLBACK_TAX,
-//   DEFAULT_COSTS: FALLBACK_DEFAULT_COSTS,
-// } = require('../config/domain');
-
 const RouteRepository = require('../repositories/RouteRepository');
 
 const {
@@ -47,11 +42,7 @@ class CostService {
     });
   }
 
-  calcBreakEvenWithConfig(
-    input = null,
-    tax = FALLBACK_TAX,
-    defaultCosts
-  ) {
+  calcBreakEvenWithConfig(input = null, tax, defaultCosts) {
     const custos = this.calcDailyCostWithDefaults(input, defaultCosts);
 
     const metas = [0, 0.2, 0.25, 0.3].map((meta) => {
